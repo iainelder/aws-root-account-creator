@@ -6,7 +6,7 @@ The account is for personal use. The billing address is assumed to be the same a
 
 Your phone number will verified via SMS. AWS also supports verification by call but the tool does not implement this.
 
-You will be asked to solve at least one captcha to prove your humanity. It will be shown in a new window and you will be prompted for text input in the termanal.
+You will be asked to solve at least one captcha to prove your humanity. It will be shown in a new window and you will be prompted for text input in the terminal.
 
 The script is likely to break because of changes to the captcha process especially and changes to the layout and the registration process in general.
 
@@ -130,3 +130,9 @@ https://hackersandslackers.com/simplify-your-python-projects-configuration/
 [aws-generate-account-policy-password](https://github.com/barnesrobert/aws-generate-account-policy-password) is an AWS Python tool for generating a random password that complies with an AWS account's password policy.
 
 [coto](https://github.com/sentialabs/coto/tree/master) provides a client for the undocumented APIs that are used by the AWS Management Console.
+
+# Captcha Solvers
+
+https://2captcha.com/, used by AWS Account Controller
+
+https://www.deathbycaptcha.com/, mentioned on Ubot Studio thread.
