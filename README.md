@@ -79,46 +79,7 @@ Use pylint to also check code style and detect possible errors.
 pipenv run pylint main.py --disable=C0116,W0511
 ```
 
-## References
-
-Using pipenv for isolated dependencies in a structured format
-
-https://docs.python-guide.org/dev/virtualenvs/
-
-Using Selenium to automate brower interaction to create a new account. There is no API for this.
-
-https://www.scrapingbee.com/blog/selenium-python/
-
-Trying to wait for page elements to load
-
-https://selenium-python.readthedocs.io/waits.html
-
-Using REPL in a script
-
-https://stackoverflow.com/questions/1395913/how-to-drop-into-repl-read-eval-print-loop-from-python-code
-
-Show an image
-
-https://stackoverflow.com/questions/35286540/display-an-image-with-python
-
-Load image from URL
-
-https://stackoverflow.com/questions/7391945/how-do-i-read-image-data-from-a-url-in-python
-
-XPath injection. I don't know how to avoid this in Selenium. Is there something like SQL's prepared statements?
-
-https://owasp.org/www-community/attacks/XPATH_Injection
-
-A neater way to select siblings in XPath
-
-https://stackoverflow.com/questions/3139402/how-to-select-following-sibling-xml-tag-using-xpath
-
-How to save a canvas as PNG in Selenium?
-
-https://stackoverflow.com/a/38318578/111424
-
-Configuring Python Projects with INI, TOML, YAML, and ENV files
-https://hackersandslackers.com/simplify-your-python-projects-configuration/
+See [References.md](References.md) for articles that helped me during development.
 
 ## Related Projects
 
@@ -126,14 +87,16 @@ https://hackersandslackers.com/simplify-your-python-projects-configuration/
 
 [Disposable Cloud Environment](https://github.com/Optum/dce) leases from an existing pool of AWS accounts for a defined period of time and with a limited budget.
 
-[Ubot Studio](http://network.ubotstudio.com/forum/index.php?/topic/21473-amazon-uk-captcha/) can be used to process Amazon's opfcaptcha service.
+[AWS Management Account Vending Machine (MAVM)]() Create new AWS management accounts on the fly and clean up and close accounts afterwards again. It promises to do the same as this tool and more, but [I can't figure out how to make it work](https://github.com/superluminar-io/mavm/issues/43).
+
+[awsapilib](https://github.com/schubergphilis/awsapilib) is a Python library exposing services that are not covered by the official boto3 library but are driven by undocumented APIs. 
+
+[coto](https://github.com/sentialabs/coto/tree/master) provides a client for the undocumented APIs that are used by the AWS Management Console. Similar to awsapilib, but seems to be abandoned.
 
 [aws-generate-account-policy-password](https://github.com/barnesrobert/aws-generate-account-policy-password) is an AWS Python tool for generating a random password that complies with an AWS account's password policy.
-
-[coto](https://github.com/sentialabs/coto/tree/master) provides a client for the undocumented APIs that are used by the AWS Management Console.
 
 # Captcha Solvers
 
 https://2captcha.com/, used by AWS Account Controller
 
-https://www.deathbycaptcha.com/, mentioned on Ubot Studio thread.
+https://www.deathbycaptcha.com/, mentioned on [Ubot Studio thread](http://network.ubotstudio.com/forum/index.php?/topic/21473-amazon-uk-captcha/).
