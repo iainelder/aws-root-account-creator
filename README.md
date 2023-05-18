@@ -45,7 +45,8 @@ As the config contains potentially sensitive information, you might want to dele
 ```ini
 [contact_information]
 name = José García
-phone_number = +34612345678
+phone_country_code = Spain (+34)
+phone_number = 612345678
 country = Spain
 address_line_1 = Calle Equis, 1
 address_line_2 = Ático 1ª
@@ -75,7 +76,7 @@ pipenv run flake8 --extend-ignore=E501
 Use pylint to also check code style and detect possible errors.
 
 ```bash
-pipenv run pylint main.py --disable=C0116
+pipenv run pylint main.py --disable=C0116,W0511
 ```
 
 ## References

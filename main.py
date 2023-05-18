@@ -11,14 +11,12 @@ import pathlib
 import urllib
 import io
 
-import requests
 from PIL import Image
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 from IPython.core.debugger import set_trace
 
@@ -56,7 +54,6 @@ def create_root_account(driver, creds, config):
 
     visit_signup_page(driver)
     submit_account_credentials(driver, creds)
-    submit_identifier_captcha(driver)
     submit_contact_information(driver, config["contact_information"])
     submit_billing_information(driver, config["billing_information"])
     confirm_identity(driver, config["identity_verification"])
@@ -74,46 +71,45 @@ def visit_signup_page(driver):
 
 def submit_account_credentials(driver, creds):
 
+    submit_account_identity(driver, creds)
+    submit_email_confirmation(driver)
+    submit_account_password(driver, creds)
+
+
+def submit_account_identity(driver, creds):
+
     wait_for_message(driver, "Sign up for AWS")
     set_account_email_address(driver, creds["email_address"])
-    set_account_password(driver, creds["password"])
     set_account_name(driver, creds["account_name"])
+    hit_continue(driver, "Verify email address")
+
+
+def submit_email_confirmation(driver):
+
+    wait_for_message(driver, "Confirm you are you")
+    set_verification_code(driver, input("Email verification code: "))
+    hit_continue(driver, "Verify")
+
+
+def submit_account_password(driver, creds):
+
+    wait_for_message(driver, "Create your password")
+    set_account_password(driver, creds["password"])
     hit_continue(driver)
-
-
-def submit_identifier_captcha(driver):
-    """
-    FIXME: This doesn't appear reliably enough for me to complete testing it.
-
-    The identifier captcha doesn't always appear. That's why this function
-    has a shorter timeout than the default and swallows the timeout exception.
-    This seems inelegant, but it's the easiest thing for now. A nicer solution
-    could be to wait for each message in a main loop and dispach the function
-    it corresponds to if the message appears. That would make the program more
-    flexible and perhaps more robust. But it requires refactoring that I don't
-    have time for right now.
-
-    Either way, when it does happen, I need a solution. It's different type of
-    captcha from the one that reliably appears. So solve_captcha will fail and
-    the debugger will start and I can test with the current state.
-    """
-
-    try:
-        wait_for_message(driver, "For security reasons, we need to verify that account holders are real people.", timeout=10)
-        set_captcha_guess(solve_captcha(extract_canvas_captcha(driver)))
-        hit_continue()
-    except TimeoutException as ex:
-        pass
 
 
 def extract_canvas_captcha(driver):
 
+    # FIXME: Often the data URL is taken before the captcha is loaded. When this
+    # happens the returned PNG image is blank. Add a wait_for_captcha function
+    # or similar.
     canvas = driver.find_element_by_id("captchaCanvas")
     captcha_data_url = driver.execute_script(
         "return arguments[0].toDataURL('image/png')", canvas)
-    response = urllib.request.urlopen(captcha_data_url)
-    png_file = io.BytesIO(response.read())
-    return png_file
+    print(f"DEBUG {captcha_data_url=}")
+    with urllib.request.urlopen(captcha_data_url) as response:
+        png_file = io.BytesIO(response.read())
+        return png_file
 
 
 def submit_contact_information(driver, info):
@@ -121,6 +117,7 @@ def submit_contact_information(driver, info):
     wait_for_message(driver, "Contact Information")
     set_purpose(driver, "Personal")
     set_contact_name(driver, info["name"])
+    set_contact_phone_country_code(driver, info["phone_country_code"])
     set_contact_phone_number(driver, info["phone_number"])
     set_country(driver, info["country"])
     set_address_line_1(driver, info["address_line_1"])
@@ -145,15 +142,36 @@ def submit_billing_information(driver, info):
 
 def confirm_identity(driver, info):
 
+    # If the prompt appears, choose SMS because it's easier to use manually.
+    # If the prompt does not appear, AWS forces you to receive a call.
+    # Sometimes the prompt appears, sometimes it doesn't. I don't know why.
+    # TODO: Try to automate the call confirmation to avoid this choice.
+    wait_for_message(driver, "Confirm your identity")
+    body_text = driver.find_element_by_xpath("//body").text
+    choice_prompt = "How should we send you the verification code?"
+    if choice_prompt in body_text:
+        confirm_identity_by_sms(driver, info)
+    else:
+        confirm_identity_by_call(driver, info)
+
+
+def confirm_identity_by_sms(driver, info):
+
     wait_for_message(driver, "Confirm your identity")
     set_verification_method(driver, "Text message (SMS)")
     set_verification_phone_country_code(driver, info["phone_country_code"])
     set_verification_phone_number(driver, info["phone_number"])
     set_captcha_guess(driver, solve_captcha(extract_canvas_captcha(driver)))
     hit_continue(driver, button_label="Send SMS")
+
     wait_for_message(driver, "Verify code")
     set_sms_pin(driver, input("Verify code: "))
     hit_continue(driver)
+
+
+def confirm_identity_by_call(driver, info):
+
+    raise Exception("Identity confirmation by call not implemented")
 
 
 def select_support_plan(driver):
@@ -216,7 +234,11 @@ def hit_continue(driver, button_label="Continue"):
 
 
 def set_account_email_address(driver, address):
-    set_text(driver, "email", address)
+    set_text(driver, "emailAddress", address)
+
+
+def set_verification_code(driver, code):
+    set_text(driver, "otp", code)
 
 
 def set_account_password(driver, password):
@@ -225,7 +247,7 @@ def set_account_password(driver, password):
 
 
 def set_account_name(driver, name):
-    set_text(driver, "accountName", name)
+    set_text(driver, "fullName", name)
 
 
 def set_purpose(driver, purpose):
@@ -238,6 +260,10 @@ def set_contact_name(driver, name):
 
 def set_country(driver, country):
     set_dropdown(driver, "address.country", country)
+
+
+def set_contact_phone_country_code(driver, code):
+    set_dropdown(driver, "address.phoneCode", code)
 
 
 def set_contact_phone_number(driver, number):
@@ -309,14 +335,7 @@ def set_support_plan(driver, plan):
 
 
 def set_captcha_guess(driver, guess):
-    set_text(driver, "captchaGuess", guess) 
-
-
-def extract_img_captcha(driver):
-    img = driver.find_element_by_xpath("//img[@alt='captcha']")
-    src = img.get_attribute("src")
-    response = requests.get(src, stream=True)
-    return requests.raw
+    set_text(driver, "captchaGuess", guess)
 
 
 def solve_captcha(captcha_file):
