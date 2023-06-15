@@ -11,6 +11,8 @@ ipython = "*"
 pylint = "*"
 pyonepassword = "*"
 flake8 = "*"
+boto3-stubs = {extras = ["sts"], version = "*"}
+boto3 = "*"
 
 [dev-packages]
 
