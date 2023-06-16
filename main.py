@@ -25,12 +25,14 @@ def main():
 
     try:
         config = read_root_user_config()
+        config["account_credentials"]["root_user_password"] = (
+            generate_root_user_password()
+        )
 
-        creds = generate_credentials()
-        save_credentials(creds)
+        save_credentials(config["account_credentials"])
 
         driver = init_driver()
-        create_root_account(driver, creds, config)
+        create_root_account(driver, config)
 
     except Exception:  # pylint: disable=broad-except
 
@@ -45,15 +47,25 @@ def main():
 def read_root_user_config():
 
     path = pathlib.Path.home().joinpath(".aws", "root_user_config.ini")
-    config = configparser.ConfigParser()
+    # Interpolation misinterprets certain password characters. All I really need
+    # to return is a nest of dicts, but there's no built-in method for that.
+    config = configparser.ConfigParser(interpolation=None)
     config.read(path)
+    for key, value in config["account_credentials"].items():
+        config["account_credentials"][key] = substitute(value)
     return config
 
 
-def create_root_account(driver, creds, config):
+def substitute(template_str):
+    return string.Template(template_str).substitute(
+        random=''.join(secrets.choice(string.ascii_lowercase) for _ in range(6))
+    )
+
+
+def create_root_account(driver, config):
 
     visit_signup_page(driver)
-    submit_account_credentials(driver, creds)
+    submit_account_credentials(driver, config["account_credentials"])
     submit_contact_information(driver, config["contact_information"])
     submit_billing_information(driver, config["billing_information"])
     confirm_identity(driver, config["identity_verification"])
@@ -79,8 +91,8 @@ def submit_account_credentials(driver, creds):
 def submit_account_identity(driver, creds):
 
     wait_for_message(driver, "Sign up for AWS")
-    set_account_email_address(driver, creds["email_address"])
-    set_account_name(driver, creds["account_name"])
+    set_account_email_address(driver, creds["root_user_email_address"])
+    set_account_name(driver, creds["aws_account_name"])
     hit_continue(driver, "Verify email address")
 
 
@@ -94,7 +106,7 @@ def submit_email_confirmation(driver):
 def submit_account_password(driver, creds):
 
     wait_for_message(driver, "Create your password")
-    set_account_password(driver, creds["password"])
+    set_account_password(driver, creds["root_user_password"])
     hit_continue(driver)
 
 
@@ -181,23 +193,7 @@ def select_support_plan(driver):
     hit_continue(driver, button_label="Complete sign up")
 
 
-def generate_credentials():
-    creds = generate_identifiers()
-    creds["password"] = generate_password()
-    return creds
-
-
-def generate_identifiers():
-
-    account_suffix = ''.join(secrets.choice(string.ascii_lowercase) for i in range(6))
-
-    return {
-        "email_address": f"iain+awsroot+{account_suffix}@isme.es",
-        "account_name": f"isme-root-{account_suffix}"
-    }
-
-
-def generate_password():
+def generate_root_user_password():
 
     # "Your password must include a minimum of three of the following mix of character types:
     # uppercase, lowercase, numbers, and ! @ # $ % ^ & * () <> [] {} | _+-= symbols."
@@ -211,11 +207,12 @@ def generate_password():
 
 def save_credentials(creds):
 
-    file_name = "credentials-{account_name}.txt".format_map(creds)
+    file_name = "credentials-{aws_account_name}.txt".format_map(creds)
 
     with open(file_name, "w") as out:
 
-        csv = "{account_name},{email_address},{password}\n".format_map(creds)
+        template = "{aws_account_name},{root_user_email_address},{root_user_password}\n"
+        csv = template.format_map(creds)
         out.write(csv)
 
 

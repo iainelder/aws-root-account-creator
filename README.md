@@ -43,6 +43,10 @@ Save the config file to `~/.aws/root_user_config.ini` to make it available to th
 As the config contains potentially sensitive information, you might want to delete the file after creating the account and saving the content somewhere more secure such as a 1Password vault.
 
 ```ini
+[account_credentials]
+root_user_email_address = jose.garcia+awsroot+${random}@example.org
+aws_account_name = test-org-${random}
+
 [contact_information]
 name = José García
 phone_country_code = Spain (+34)
