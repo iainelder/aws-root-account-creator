@@ -1,6 +1,6 @@
 # Automatic creation of AWS root account
 
-Note: Captcha detection appears to be broken for now. See[isse #3](https://github.com/iainelder/aws-root-account-creator/issues/3).
+Note: Captcha detection appears to be broken for now. See [issue #3](https://github.com/iainelder/aws-root-account-creator/issues/3).
 
 Creates a new AWS root account and saves the credentials locally.
 
