@@ -103,7 +103,7 @@ def extract_canvas_captcha(driver):
     # FIXME: Often the data URL is taken before the captcha is loaded. When this
     # happens the returned PNG image is blank. Add a wait_for_captcha function
     # or similar.
-    canvas = driver.find_element_by_id("captchaCanvas")
+    canvas = driver.find_element(By.ID, "captchaCanvas")
     captcha_data_url = driver.execute_script(
         "return arguments[0].toDataURL('image/png')", canvas)
     print(f"DEBUG {captcha_data_url=}")
@@ -147,7 +147,7 @@ def confirm_identity(driver, info):
     # Sometimes the prompt appears, sometimes it doesn't. I don't know why.
     # TODO: Try to automate the call confirmation to avoid this choice.
     wait_for_message(driver, "Confirm your identity")
-    body_text = driver.find_element_by_xpath("//body").text
+    body_text = driver.find_element(By.XPATH, "//body").text
     choice_prompt = "How should we send you the verification code?"
     if choice_prompt in body_text:
         confirm_identity_by_sms(driver, info)
@@ -229,7 +229,7 @@ def hit_continue(driver, button_label="Continue"):
 
     # Use submit() function to avoid "not clickable" errors because of the
     # button being obscured.
-    button = driver.find_element_by_xpath(f"//button[contains(span/text(), '{button_label}')]")
+    button = driver.find_element(By.XPATH, f"//button[contains(span/text(), '{button_label}')]")
     button.submit()
 
 
@@ -345,23 +345,23 @@ def solve_captcha(captcha_file):
 
 def set_dropdown(driver, element_id, option):
 
-    dropdown = driver.find_element_by_xpath(f"//awsui-select[@id='{element_id}']")
+    dropdown = driver.find_element(By.XPATH, f"//awsui-select[@id='{element_id}']")
     dropdown.click()
-    option = dropdown.find_element_by_xpath(
+    option = dropdown.find_element(By.XPATH, 
         f"//*[contains(@id, 'dropdown-option')]//span[text() = '{option}']")
     option.click()
 
 
 def set_text(driver, input_name, value):
 
-    field = driver.find_element_by_name(input_name)
+    field = driver.find_element(By.NAME, input_name)
     field.clear()
     field.send_keys(value)
 
 
 def set_radio(driver, input_name, label):
 
-    field = driver.find_element_by_xpath(
+    field = driver.find_element(By.XPATH, 
         f"//div[@class = 'awsui-radio-button' and .//span[contains(text(), '{label}')]]"
         f"//input[@name = '{input_name}']")
     field.send_keys(" ")
@@ -369,7 +369,7 @@ def set_radio(driver, input_name, label):
 
 def set_checkbox(driver, input_name, selected=True):
 
-    checkbox = driver.find_element_by_name(input_name)
+    checkbox = driver.find_element(By.NAME, input_name)
 
     current = checkbox.is_selected()
     desired = selected
