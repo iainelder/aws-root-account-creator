@@ -1,5 +1,7 @@
 # Automatic creation of AWS root account
 
+Note: Captcha detection appears to be broken for now. See[isse #3](https://github.com/iainelder/aws-root-account-creator/issues/3).
+
 Creates a new AWS root account and saves the credentials locally.
 
 The account is for personal use. The billing address is assumed to be the same as the contact address.
