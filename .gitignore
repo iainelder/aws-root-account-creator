@@ -1,0 +1,5 @@
+# The root account creator saves generated credentials.
+credentials-*.txt
+
+# Selenium's Firefox driver generates this.
+geckodriver.log
