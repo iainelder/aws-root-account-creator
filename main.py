@@ -110,16 +110,10 @@ def submit_account_password(driver, creds):
     hit_continue(driver)
 
 
-def extract_canvas_captcha(driver):
-
-    # FIXME: Often the data URL is taken before the captcha is loaded. When this
-    # happens the returned PNG image is blank. Add a wait_for_captcha function
-    # or similar.
-    canvas = driver.find_element(By.ID, "captchaCanvas")
-    captcha_data_url = driver.execute_script(
-        "return arguments[0].toDataURL('image/png')", canvas)
-    print(f"DEBUG {captcha_data_url=}")
-    with urllib.request.urlopen(captcha_data_url) as response:
+def extract_img_captcha(driver):
+    img = driver.find_element(By.XPATH, "//img[@alt='captcha']")
+    url = img.get_property("src")
+    with urllib.request.urlopen(url) as response:
         png_file = io.BytesIO(response.read())
         return png_file
 
@@ -173,7 +167,7 @@ def confirm_identity_by_sms(driver, info):
     set_verification_method(driver, "Text message (SMS)")
     set_verification_phone_country_code(driver, info["phone_country_code"])
     set_verification_phone_number(driver, info["phone_number"])
-    set_captcha_guess(driver, solve_captcha(extract_canvas_captcha(driver)))
+    set_captcha_guess(driver, solve_captcha(extract_img_captcha(driver)))
     hit_continue(driver, button_label="Send SMS")
 
     wait_for_message(driver, "Verify code")
