@@ -6,7 +6,7 @@ from boto3.session import Session as BotoSession
 # TODO: Run mypy, delete existing keys, handle CAPTCHAS, modularize, document, make boto3 dev dependency only.
 def main():
     key = create_root_access_key()
-    sleep(10)  # Avoid InvalidClientTokeId. Allow time to propagate.
+    allow_key_to_propagate()
     print_caller_info(key)
 
 
@@ -23,6 +23,12 @@ def create_root_access_key() -> AccessKey:
         f.write(f"{key['AccessKeyId']},{key['SecretAccessKey']}")
 
     return key
+
+
+def allow_key_to_propagate():
+    """Avoid InvalidClientTokenId."""
+    print("Wait 10 seconds to allow key to propagate")
+    sleep(10)
 
 
 def print_caller_info(key: AccessKey) -> None:
