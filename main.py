@@ -216,7 +216,7 @@ def save_credentials(creds):
         out.write(csv)
 
 
-def wait_for_message(driver, message, timeout=60):
+def wait_for_message(driver, message, timeout=600):
 
     WebDriverWait(driver, timeout).until(
         EC.presence_of_element_located((By.XPATH, f"//*[text() = '{message}']")))
