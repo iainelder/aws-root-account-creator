@@ -47,16 +47,13 @@ def main():
 def read_root_user_config():
 
     path = pathlib.Path.home().joinpath(".aws", "root_user_config.ini")
-    # Interpolation misinterprets certain password characters. All I really need
-    # to return is a nest of dicts, but there's no built-in method for that.
-    config = configparser.ConfigParser(interpolation=None)
-    config.read(path)
-    for key, value in config["account_credentials"].items():
-        config["account_credentials"][key] = substitute(value)
+    config = configparser.ConfigParser()
+    config.read_string(substitute(path.read_text()))
     return config
 
 
 def substitute(template_str):
+
     return string.Template(template_str).substitute(
         random=''.join(secrets.choice(string.ascii_lowercase) for _ in range(6))
     )
